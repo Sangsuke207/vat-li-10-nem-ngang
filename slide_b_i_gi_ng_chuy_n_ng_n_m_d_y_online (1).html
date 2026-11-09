@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide Bài Giảng: Chuyển Động Ném (Chuẩn Giao Diện OLM.VN)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Quicksand & Nunito & Baloo 2 for exact OLM rounded academic look -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Times+New+Roman&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --olm-cyan: #65d6ea;
+            --olm-purple: #822675;
+            --olm-purple-light: #a63a96;
+            --olm-coral: #ff8585;
+            --olm-yellow-bg: #fff5cc;
+            --olm-yellow-border: #e6b800;
+            --olm-pink-box: #ebd0df;
+        }
+
+        body {
+            background-color: var(--olm-cyan);
+            font-family: 'Nunito', sans-serif;
+            color: #2d1b2e;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* OLM Squared Notebook Grid Background */
+        .olm-grid-page {
+            background-color: #fcfdfe;
+            background-image: 
+                linear-gradient(to right, #e5edf2 1.5px, transparent 1.5px),
+                linear-gradient(to bottom, #e5edf2 1.5px, transparent 1.5px);
+            background-size: 26px 26px;
+            box-shadow: 0 12px 35px rgba(13, 88, 104, 0.22);
+            border-radius: 22px;
+        }
+
+        /* Coral Pink Cover Page Grid */
+        .olm-coral-cover {
+            background-color: #ff8585;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.16) 1.5px, transparent 1.5px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.16) 1.5px, transparent 1.5px);
+            background-size: 26px 26px;
+            box-shadow: 10px 12px 0px rgba(255, 255, 255, 0.85), 0 15px 35px rgba(0, 0, 0, 0.18);
+            border-radius: 22px;
+        }
+
+        /* Title Font */
+        .font-baloo {
+            font-family: 'Baloo 2', cursive, sans-serif;
+        }
+
+        /* Physics Math Serif Font (like SGK / Equation Editor in OLM) */
+        .math-text {
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 0.02em;
+        }
+
+        /* Vector Arrow Overhead */
+        .vec {
+            position: relative;
+            display: inline-block;
+            font-style: italic;
+        }
+        .vec::after {
+            content: "→";
+            position: absolute;
+            top: -0.58em;
+            left: 50%;
+            transform: translateX(-48%) scale(0.78);
+            font-style: normal;
+            font-weight: bold;
+        }
+
+        /* Fraction formatting */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            padding: 0 0.22em;
+            font-size: 0.92em;
+        }
+        .frac > span:first-child {
+            border-bottom: 2px solid currentColor;
+            padding: 0 0.25em 0.05em;
+        }
+        .frac > span:last-child {
+            padding: 0.05em 0.25em 0;
+        }
+
+        /* Square Root Styling */
+        .sqrt-wrap {
+            display: inline-flex;
+            align-items: center;
+            vertical-align: middle;
+        }
+        .sqrt-sign {
+            font-size: 1.4em;
+            line-height: 1;
+            margin-right: 1px;
+            font-family: serif;
+        }
+        .sqrt-body {
+            border-top: 2px solid currentColor;
+            padding-top: 2px;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
+
+        /* OLM Yellow Formula Highlight Box */
+        .olm-yellow-box {
+            background-color: #fff3c4;
+            border: 2px solid #e2b600;
+            border-radius: 8px;
+            padding: 4px 14px;
+            display: inline-block;
+            box-shadow: 0 2px 6px rgba(226, 182, 0, 0.15);
+            color: #1e293b;
+        }
+
+        /* OLM Pink Formula Reminder Box */
+        .olm-pink-box {
+            background-color: #edd5e3;
+            border: 2px solid #c99ab6;
+            border-radius: 12px;
+            padding: 12px 18px;
+            color: #2b1829;
+        }
+
+        /* Step-by-step Reveal Animations */
+        .step-item {
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .step-item.shown {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Slide View Switching */
+        .slide-view {
+            display: none;
+            animation: slideFade 0.25s ease-out;
+        }
+        .slide-view.active {
+            display: flex;
+        }
+        @keyframes slideFade {
+            from { opacity: 0; transform: scale(0.99); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Red Glowing Teacher Laser Dot (Just like the OLM teacher pointer!) */
+        #laser-dot {
+            pointer-events: none;
+            position: fixed;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 25, 25, 0.92);
+            box-shadow: 0 0 10px 4px rgba(255, 30, 30, 0.85), 0 0 22px 8px rgba(255, 80, 80, 0.45);
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: none;
+        }
+
+        /* Drawing Canvas */
+        #drawing-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: calc(100vh - 56px);
+            z-index: 80;
+            pointer-events: none;
+        }
+        #drawing-canvas.active-draw {
+            pointer-events: auto;
+            cursor: crosshair;
+        }
+
+        /* Spiral Notebook Rings */
+        .spiral-ring {
+            width: 44px;
+            height: 18px;
+            background: #8c387f;
+            border-radius: 999px;
+            position: relative;
+            box-shadow: inset -3px -2px 4px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.18);
+        }
+        .spiral-hole {
+            width: 16px;
+            height: 16px;
+            background: #7c256c;
+            border-radius: 50%;
+        }
+
+        /* Custom Scrollbar */
+        .slide-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .slide-scroll::-webkit-scrollbar-thumb {
+            background: #c79cc0;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between select-none">
+
+    <!-- OLM Red Teacher Laser Pointer -->
+    <div id="laser-dot"></div>
+
+    <!-- Teacher Annotation Canvas -->
+    <canvas id="drawing-canvas"></canvas>
+
+    <!-- =====================================================
+         OUTER CYAN FRAME & INNER NOTEBOOK SLIDE CONTAINER
+         ===================================================== -->
+    <main class="flex-1 w-full h-[calc(100vh-56px)] p-3 sm:p-5 lg:p-6 flex items-center justify-center overflow-hidden">
+
+        <!-- =====================================================
+             SLIDE 1: BÌA BÀI GIẢNG "CHUYỂN ĐỘNG NÉM" & MỤC 01
+             ===================================================== -->
+        <section id="slide-1" class="slide-view active w-full h-full max-w-[1440px] flex-col items-center justify-center relative">
+            <!-- Toggle between Main Coral Cover & Section 01 Cover -->
+            <div class="absolute top-3 right-4 z-30 flex items-center gap-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow border border-cyan-200">
+                <button onclick="switchCoverMode('main')" id="btn-cover-main" class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#ff6b6b] text-white transition">
+                    Bìa chính: Chuyển động ném
+                </button>
+                <button onclick="switchCoverMode('sec1')" id="btn-cover-sec1" class="px-3 py-1 rounded-full text-xs font-extrabold text-[#822675] hover:bg-purple-100 transition">
+                    Mục 01: Chuyển động ném ngang
+                </button>
+            </div>
+
+            <!-- MODE A: CORAL PINK NOTEBOOK COVER WITH BASKETBALL ARCH -->
+            <div id="cover-main-box" class="olm-coral-cover w-full h-full flex relative overflow-hidden p-6 lg:p-12">
+                <!-- Left Spiral Binding -->
+                <div class="hidden sm:flex flex-col justify-around py-6 pr-6 z-20 -ml-8">
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                </div>
+
+                <!-- Center Basketball Parabolic Arch & Title -->
+                <div class="flex-1 flex flex-col items-center justify-center relative">
+                    <!-- Interactive Basketball Hoop Demo SVG -->
+                    <svg id="cover-bball-svg" viewBox="0 0 900 460" class="w-full max-w-[920px] h-auto drop-shadow-md">
+                        <!-- Faint dashed parabolic arc connecting the 6 basketballs -->
+                        <path id="bball-arc-path" d="M 155 375 C 210 100, 690 100, 745 375" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="5" stroke-dasharray="12,10"/>
+
+                        <!-- Reusable Basketball Graphic Definition -->
+                        <defs>
+                            <g id="basketball-icon">
+                                <circle cx="0" cy="0" r="38" fill="#f26422" stroke="#4a1c07" stroke-width="3.5"/>
+                                <!-- Shading -->
+                                <path d="M -26 -26 A 38 38 0 0 1 32 18" fill="none" stroke="#ff8a47" stroke-width="5" opacity="0.5"/>
+                                <!-- Basketball Ribs -->
+                                <path d="M -38 0 Q 0 12 38 0" fill="none" stroke="#4a1c07" stroke-width="3"/>
+                                <path d="M 0 -38 Q -12 0 0 38" fill="none" stroke="#4a1c07" stroke-width="3"/>
+                                <path d="M -27 -27 Q 0 0 -27 27" fill="none" stroke="#4a1c07" stroke-width="3"/>
+                                <path d="M 27 -27 Q 0 0 27 27" fill="none" stroke="#4a1c07" stroke-width="3"/>
+                            </g>
+                        </defs>
+
+                        <!-- 6 Basketballs arranged in OLM Parabolic Arch -->
+                        <use href="#basketball-icon" x="155" y="365" />
+                        <use href="#basketball-icon" x="230" y="215" />
+                        <use href="#basketball-icon" x="365" y="120" />
+                        <use href="#basketball-icon" x="535" y="120" />
+                        <use href="#basketball-icon" x="670" y="215" />
+                        <use href="#basketball-icon" x="745" y="365" />
+
+                        <!-- Animated Ball when clicking "Ném bóng" -->
+                        <use id="moving-bball" href="#basketball-icon" x="155" y="365" opacity="0"/>
+
+                        <!-- Center Title Text -->
+                        <text x="450" y="275" text-anchor="middle" fill="#ffffff" font-family="'Baloo 2', sans-serif" font-size="60" font-weight="800" letter-spacing="2" style="filter: drop-shadow(0 4px 6px rgba(130,38,117,0.35));">
+                            CHUYỂN ĐỘNG
+                        </text>
+                        <text x="450" y="355" text-anchor="middle" fill="#ffffff" font-family="'Baloo 2', sans-serif" font-size="64" font-weight="800" letter-spacing="3" style="filter: drop-shadow(0 4px 6px rgba(130,38,117,0.35));">
+                            NÉM
+                        </text>
+                    </svg>
+
+                    <div class="mt-2 flex items-center gap-4">
+                        <button onclick="animateCoverBasketball()" class="px-5 py-2.5 rounded-full bg-white text-[#e04f4f] hover:bg-amber-50 font-extrabold text-base shadow-lg transition flex items-center gap-2">
+                            <i class="fa-solid fa-basketball fa-bounce"></i> Chạy hoạt ảnh quỹ đạo bóng rổ
+                        </button>
+                        <button onclick="switchCoverMode('sec1')" class="px-5 py-2.5 rounded-full bg-[#822675] text-white hover:bg-[#691c5e] font-extrabold text-base shadow-lg transition flex items-center gap-2">
+                            Vào Phần 01: Chuyển động ném ngang <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODE B: WHITE SPIRAL PAGE "01 - CHUYỂN ĐỘNG NÉM NGANG" (Video 1: 01:28) -->
+            <div id="cover-sec1-box" class="olm-grid-page hidden w-full h-full flex relative overflow-hidden p-6 lg:p-12">
+                <!-- Left Spiral Binding -->
+                <div class="hidden sm:flex flex-col justify-around py-6 pr-6 z-20 -ml-8">
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                    <div class="spiral-ring"></div>
+                </div>
+
+                <div class="flex-1 flex flex-col items-center justify-center relative text-center">
+                    <!-- Number 01 Circle Badge -->
+                    <div class="w-28 h-28 rounded-full bg-[#ffd6d6] border-4 border-[#ff8585] flex items-center justify-center shadow-md mb-6">
+                        <span class="font-baloo text-5xl font-extrabold text-[#822675]">01</span>
+                    </div>
+
+                    <h1 class="font-baloo text-4xl sm:text-6xl font-extrabold text-[#822675] tracking-wide uppercase">
+                        CHUYỂN ĐỘNG NÉM NGANG
+                    </h1>
+                    <p class="text-slate-500 text-lg mt-3 font-semibold">
+                        Vật lí 10 • Chương trình Giáo dục phổ thông 2018
+                    </p>
+
+                    <button onclick="nextSlide()" class="mt-8 px-6 py-3 rounded-full bg-[#822675] hover:bg-[#6b1d60] text-white font-extrabold text-lg shadow-lg transition flex items-center gap-2">
+                        Bắt đầu bài học <i class="fa-solid fa-play"></i>
+                    </button>
+
+                    <!-- Decorative Pencil & Owl Mascot in Bottom Right (Just like OLM!) -->
+                    <div class="hidden md:flex items-end gap-3 absolute bottom-2 right-6">
+                        <div class="text-6xl text-amber-500 transform -rotate-12">
+                            <i class="fa-solid fa-pencil"></i>
+                        </div>
+                        <div class="bg-[#a63a96] text-white p-4 rounded-2xl shadow-lg flex items-center gap-3 border-2 border-purple-200">
+                            <i class="fa-solid fa-graduation-cap text-3xl text-amber-300"></i>
+                            <div class="text-left">
+                                <div class="text-xs uppercase font-bold text-purple-200">Mục tiêu bài học</div>
+                                <div class="text-sm font-extrabold">Hiểu bản chất 2 chuyển động thành phần!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             SLIDE 2: NHẮC LẠI VỀ LỰC & KHÁI NIỆM NÉM NGANG (Video 1: 00:31 - 02:10)
+             ===================================================== -->
+        <section id="slide-2" class="slide-view olm-grid-page w-full h-full max-w-[1440px] flex-col justify-between p-6 lg:p-10 slide-scroll overflow-y-auto" data-steps="4">
+            <!-- Header Title -->
+            <div class="flex items-center justify-between border-b-2 border-purple-100 pb-3">
+                <div class="flex items-center gap-3">
+                    <span class="w-9 h-9 rounded-full bg-[#9b3089] text-white flex items-center justify-center shadow">
+                        <i class="fa-solid fa-play text-sm ml-0.5"></i>
+                    </span>
+                    <h2 class="font-baloo text-2xl lg:text-3xl font-extrabold text-[#822675]">
+                        Khởi động: Tác dụng của Lực & Khái niệm Chuyển động ném ngang
+                    </h2>
+                </div>
+                <span class="text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-purple-100 text-[#822675]">
+                    Bấm Phím Space để hiện từng ý (4 bước)
+                </span>
+            </div>
+
+            <!-- Main Content Split -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto py-3 items-center">
+                <!-- Left 5 Cols: OLM Review of Force (Video 1: 01:02) -->
+                <div class="lg:col-span-5 bg-white/90 border-2 border-purple-200 rounded-2xl p-5 shadow-sm space-y-4">
+                    <!-- Pink Header Banner "Lực" with (!) icon -->
+                    <div class="flex items-center justify-between bg-[#e5b8d5] border-2 border-[#9b3089] rounded-xl px-4 py-2">
+                        <span class="font-baloo text-2xl font-extrabold text-[#231942]">Lực</span>
+                        <span class="w-8 h-8 rounded-full bg-[#ff758f] text-white font-black flex items-center justify-center shadow">!</span>
+                    </div>
+
+                    <!-- Step 1: 3 Effects of Force -->
+                    <div class="step-item space-y-2 text-base font-bold text-[#2b193d]" data-step="1">
+                        <div class="flex items-center gap-2.5 p-2 rounded-lg bg-purple-50/70">
+                            <i class="fa-solid fa-gauge-high text-[#9b3089]"></i>
+                            <span>Làm thay đổi tốc độ của vật</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 p-2 rounded-lg bg-purple-50/70">
+                            <i class="fa-solid fa-arrows-turn-to-dots text-[#9b3089]"></i>
+                            <span>Làm thay đổi hướng chuyển động</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 p-2 rounded-lg bg-purple-50/70">
+                            <i class="fa-solid fa-compress text-[#9b3089]"></i>
+                            <span>Làm biến dạng vật</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Contact vs Non-contact forces -->
+                    <div class="step-item grid grid-cols-2 gap-3 pt-2 border-t border-purple-100" data-step="2">
+                        <div class="bg-[#fff8e6] border border-amber-300 rounded-xl p-3">
+                            <div class="font-extrabold text-sm text-[#822675] border-b border-amber-200 pb-1 mb-1.5">
+                                • Lực tiếp xúc:
+                            </div>
+                            <ul class="text-xs sm:text-sm space-y-1 text-slate-700 font-semibold">
+                                <li>- Lực đẩy, lực kéo</li>
+                                <li>- Lực đàn hồi</li>
+                                <li>- Lực ma sát</li>
+                            </ul>
+                        </div>
+                        <div class="bg-[#fceef5] border border-pink-300 rounded-xl p-3">
+                            <div class="font-extrabold text-sm text-[#822675] border-b border-pink-200 pb-1 mb-1.5">
+                                • Lực không tiếp xúc:
+                            </div>
+                            <ul class="text-xs sm:text-sm space-y-1 text-slate-700 font-semibold">
+                                <li class="text-rose-600 font-extrabold">- Trọng lực (hút vật rơi xuống)</li>
+                                <li>- Lực điện, lực từ</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 7 Cols: Concept of Horizontal Projectile Motion (Video 1: 01:40 - 02:10) -->
+                <div class="lg:col-span-7 flex flex-col justify-between space-y-4">
+                    <!-- Step 3: Interactive Illustration of Student Throwing Red Ball Horizontally -->
+                    <div class="step-item bg-white border-2 border-cyan-200 rounded-2xl p-4 shadow-sm relative" data-step="3">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-extrabold text-[#822675] text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-child-reaching text-rose-500"></i> Quan sát hiện tượng ném ngang:
+                            </span>
+                            <button onclick="playStudentThrowDemo()" class="px-4 py-1.5 rounded-full bg-[#9b3089] hover:bg-[#7c256c] text-white font-bold text-xs shadow transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-play"></i> Ném thử bóng với vận tốc ngang v₀
+                            </button>
+                        </div>
+
+                        <svg id="student-throw-svg" viewBox="0 0 650 250" class="w-full h-auto bg-[#f8fcff] rounded-xl border border-slate-200">
+                            <defs>
+                                <marker id="arrow-v0-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+                                </marker>
+                            </defs>
+                            <!-- Ground -->
+                            <ellipse cx="475" cy="218" rx="68" ry="18" fill="#fef08a" stroke="#ca8a04" stroke-width="3"/>
+                            <text x="475" y="223" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">Đích rơi</text>
+
+                            <!-- Stylized Student Figure on Left -->
+                            <!-- Legs -->
+                            <line x1="95" y1="165" x2="80" y2="225" stroke="#1e3a8a" stroke-width="10" stroke-linecap="round"/>
+                            <line x1="108" y1="165" x2="122" y2="225" stroke="#1e3a8a" stroke-width="10" stroke-linecap="round"/>
+                            <!-- Torso -->
+                            <rect x="82" y="102" width="38" height="68" rx="14" fill="#38bdf8"/>
+                            <!-- Head -->
+                            <circle cx="101" cy="74" r="22" fill="#fed7aa" stroke="#9a3412" stroke-width="2"/>
+                            <!-- Hair -->
+                            <path d="M 80 70 Q 100 42 123 68" fill="#451a03"/>
+                            <!-- Throwing Arm extended horizontally at y = 85 -->
+                            <path d="M 112 112 Q 135 90 165 85" fill="none" stroke="#fed7aa" stroke-width="9" stroke-linecap="round"/>
+
+                            <!-- Initial Velocity Vector v0 -->
+                            <line x1="175" y1="85" x2="285" y2="85" stroke="#e11d48" stroke-width="3.5" marker-end="url(#arrow-v0-red)"/>
+                            <text x="225" y="70" fill="#e11d48" font-family="'Times New Roman', serif" font-size="24" font-weight="bold" font-style="italic">v⃗₀</text>
+
+                            <!-- Dotted Parabolic Trajectory (Just like OLM Video 1 at 01:55) -->
+                            <g id="throw-dots-group">
+                                <circle cx="205" cy="87" r="6" fill="#fda4af"/>
+                                <circle cx="245" cy="93" r="6" fill="#fda4af"/>
+                                <circle cx="285" cy="103" r="6" fill="#fda4af"/>
+                                <circle cx="325" cy="118" r="6" fill="#fda4af"/>
+                                <circle cx="365" cy="137" r="6" fill="#fda4af"/>
+                                <circle cx="405" cy="160" r="6" fill="#fda4af"/>
+                                <circle cx="442" cy="187" r="6" fill="#fda4af"/>
+                            </g>
+
+                            <!-- Red Ball -->
+                            <circle id="student-red-ball" cx="172" cy="85" r="14" fill="#e11d48" stroke="#fff" stroke-width="2"/>
+                        </svg>
+                    </div>
+
+                    <!-- Step 4: Official OLM Definition Box (Video 1: 02:07) -->
+                    <div class="step-item bg-[#fff5f8] border-l-8 border-[#9b3089] rounded-r-2xl p-5 shadow-md" data-step="4">
+                        <div class="text-xs font-extrabold uppercase tracking-wider text-[#9b3089] mb-1">
+                            Khái niệm cần nhớ:
+                        </div>
+                        <p class="text-xl lg:text-2xl font-bold text-[#7c256c] leading-relaxed">
+                            “<span class="underline decoration-amber-400 decoration-4">Chuyển động ném ngang</span> là chuyển động có <strong>vận tốc ban đầu theo phương nằm ngang</strong> và chuyển động dưới tác dụng của <strong>trọng lực</strong>.”
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             SLIDE 3: THÍ NGHIỆM BÚA GÕ 2 VIÊN BI & ẢNH CHỤP HOẠT NGHIỆM (Video 1: 02:12 - 03:37)
+             ===================================================== -->
+        <section id="slide-3" class="slide-view olm-grid-page w-full h-full max-w-[1440px] flex-col justify-between p-6 lg:p-10 slide-scroll overflow-y-auto" data-steps="4">
+            <!-- OLM Title Header -->
+            <div class="flex flex-wrap items-center justify-between border-b-2 border-purple-100 pb-3 gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="w-9 h-9 rounded-full bg-[#9b3089] text-white flex items-center justify-center shadow">
+                        <i class="fa-solid fa-play text-sm ml-0.5"></i>
+                    </span>
+                    <h2 id="slide3-title" class="font-baloo text-xl lg:text-2xl font-extrabold text-[#822675]">
+                        Thí nghiệm về sự giống nhau giữa chuyển động ném ngang và chuyển động rơi tự do
+                    </h2>
+                </div>
+
+                <!-- Mode Toggle Buttons -->
+                <div class="flex items-center gap-2">
+                    <button onclick="strikeHammerExperiment()" class="px-4 py-1.5 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs sm:text-sm shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-hammer"></i> Gõ búa chạy thí nghiệm
+                    </button>
+                    <button onclick="toggleStrobePhotoMode()" id="btn-strobe-photo" class="px-4 py-1.5 rounded-full bg-[#822675] hover:bg-[#681c5d] text-white font-extrabold text-xs sm:text-sm shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-camera-retro"></i> Xem ảnh chụp hoạt nghiệm
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto py-2 items-center flex-1">
+                <!-- Left 5 Cols: Sequential Flowchart (Steps 1 -> 3) & Strobe Conclusion (Step 4) -->
+                <div class="lg:col-span-5 flex flex-col justify-center space-y-3">
+                    <!-- Step 1 -->
+                    <div class="step-item bg-white/95 border-2 border-purple-200 rounded-2xl p-4 shadow-sm text-center" data-step="1">
+                        <p class="text-lg lg:text-xl font-bold text-[#7c256c]">
+                            Dùng búa đập nhẹ vào thanh thép giữ bi B
+                        </p>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="step-item flex flex-col items-center space-y-2" data-step="2">
+                        <div class="text-3xl text-lime-600 font-black leading-none">
+                            <i class="fa-solid fa-down-long"></i>
+                        </div>
+                        <div class="w-full bg-white/95 border-2 border-purple-200 rounded-2xl p-4 shadow-sm text-center">
+                            <p class="text-lg lg:text-xl font-bold text-[#7c256c]">
+                                <span class="text-purple-800 underline">Bi B rơi tự do</span>, còn <span class="text-rose-500 underline">bi A bị đẩy theo phương nằm ngang</span> với vận tốc <span class="math-text font-bold">v⃗₀</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="step-item flex flex-col items-center space-y-2" data-step="3">
+                        <div class="text-3xl text-lime-600 font-black leading-none">
+                            <i class="fa-solid fa-down-long"></i>
+                        </div>
+                        <div class="w-full bg-[#fff5cc] border-2 border-amber-400 rounded-2xl p-4 shadow-md text-center">
+                            <p class="text-xl lg:text-2xl font-extrabold text-[#822675]">
+                                <i class="fa-solid fa-volume-high text-rose-500 mr-1"></i> Hai bi chạm đất CÙNG MỘT LÚC!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Stroboscopic Photo Conclusion (Video 1: 03:35) -->
+                    <div class="step-item pt-2" data-step="4">
+                        <div class="bg-[#fdf2f8] border-2 border-[#9b3089] rounded-2xl p-4 shadow-md">
+                            <div class="text-xs font-extrabold uppercase text-[#9b3089] mb-1">
+                                Nhận xét từ Ảnh chụp hoạt nghiệm:
+                            </div>
+                            <p class="text-lg lg:text-xl font-extrabold text-[#7c256c] leading-relaxed">
+                                “Sự thay đổi vị trí theo phương thẳng đứng của hai viên bi là <span class="underline decoration-amber-400 decoration-4">như nhau</span>.”
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 7 Cols: Exact OLM Apparatus & Stroboscopic Canvas (Video 1: 02:30 & 03:25) -->
+                <div class="lg:col-span-7 bg-white/90 border-2 border-slate-200 rounded-2xl p-4 shadow-md flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-600 border-b border-slate-100 pb-2 mb-2">
+                        <span class="flex items-center gap-3">
+                            <span class="flex items-center gap-1.5 text-purple-800">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#7c2d86] inline-block"></span> Bi B (Rơi tự do)
+                            </span>
+                            <span class="flex items-center gap-1.5 text-rose-500">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#ff758f] inline-block"></span> Bi A (Ném ngang)
+                            </span>
+                        </span>
+                        <span id="apparatus-status" class="text-[#822675] font-extrabold">
+                            Bấm "Gõ búa chạy thí nghiệm" để quan sát!
+                        </span>
+                    </div>
+
+                    <div class="relative w-full flex items-center justify-center">
+                        <canvas id="olm-apparatus-canvas" width="680" height="390" class="w-full h-auto max-h-[390px] object-contain rounded-xl"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             SLIDE 4: PHÂN TÍCH KẾT QUẢ THÍ NGHIỆM – 2 CHUYỂN ĐỘNG THÀNH PHẦN (Video 1: 03:38 - 05:15)
+             ===================================================== -->
+        <section id="slide-4" class="slide-view olm-grid-page w-full h-full max-w-[1440px] flex-col justify-between p-6 lg:p-10 slide-scroll overflow-y-auto" data-steps="3">
+            <!-- Header -->
+            <div class="flex flex-wrap items-center justify-between border-b-2 border-purple-100 pb-3 gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="w-9 h-9 rounded-full bg-[#9b3089] text-white flex items-center justify-center shadow">
+                        <i class="fa-solid fa-play text-sm ml-0.5"></i>
+                    </span>
+                    <h2 class="font-baloo text-2xl lg:text-3xl font-extrabold text-[#822675]">
+                        Phân tích kết quả thí nghiệm
+                    </h2>
+                </div>
+
+                <!-- Switch Right View Mode: Projection Dots (04:05) vs Coordinate Vectors (04:45) -->
+                <div class="flex items-center gap-2 bg-purple-50 p-1 rounded-full border border-purple-200">
+                    <button onclick="setSlide4Mode('projection')" id="btn-s4-proj" class="px-3.5 py-1 rounded-full text-xs sm:text-sm font-extrabold bg-[#822675] text-white transition">
+                        1. Hình chiếu bóng bi lên Ox, Oy
+                    </button>
+                    <button onclick="setSlide4Mode('vectors')" id="btn-s4-vec" class="px-3.5 py-1 rounded-full text-xs sm:text-sm font-extrabold text-[#822675] hover:bg-purple-100 transition">
+                        2. Đồ thị tọa độ & Vectơ tại điểm M
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto py-3 items-center flex-1">
+                <!-- Left 5 Cols: Branching Diagram (Video 1: 04:45) -->
+                <div class="lg:col-span-5 flex flex-col justify-center space-y-5">
+                    <div class="bg-white border-2 border-purple-200 rounded-2xl p-5 shadow-sm">
+                        <div class="font-baloo text-2xl font-extrabold text-[#822675] mb-4">
+                            Tách chuyển động ném ngang thành 2 thành phần:
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <!-- Root Node -->
+                            <div class="bg-[#fceef5] border-2 border-[#9b3089] rounded-xl p-3 font-extrabold text-[#7c256c] text-center w-36 shadow-sm">
+                                Chuyển động<br>ném ngang
+                            </div>
+
+                            <!-- Two Yellow Branching Arrows -->
+                            <div class="flex flex-col justify-between h-28 text-amber-500 font-black text-2xl">
+                                <span class="transform -rotate-12">➔</span>
+                                <span class="transform rotate-12">➔</span>
+                            </div>
+
+                            <!-- 2 Component Nodes -->
+                            <div class="flex-1 space-y-3">
+                                <div class="step-item bg-[#fff8e6] border-2 border-amber-400 rounded-xl p-3 font-bold text-[#7c256c] shadow-sm" data-step="1">
+                                    Chuyển động theo <strong class="underline">phương thẳng đứng</strong> (Trục Oy)
+                                </div>
+                                <div class="step-item bg-[#eefbfd] border-2 border-cyan-400 rounded-xl p-3 font-bold text-[#7c256c] shadow-sm" data-step="2">
+                                    Chuyển động theo <strong class="underline">phương nằm ngang</strong> (Trục Ox)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Key Insight -->
+                    <div class="step-item bg-[#fff5cc] border-2 border-[#e6b800] rounded-2xl p-4 shadow-sm" data-step="3">
+                        <div class="font-extrabold text-[#822675] text-base flex items-center gap-2">
+                            <i class="fa-solid fa-star text-amber-500"></i> Nhận xét khi chiếu lên 2 trục:
+                        </div>
+                        <ul class="mt-2 space-y-1.5 text-base font-bold text-slate-800">
+                            <li>• <strong>Trên trục Oy:</strong> Các vị trí thưa dần giống hệt bi rơi tự do $\rightarrow$ <span class="text-rose-600">Chuyển động rơi tự do</span>.</li>
+                            <li>• <strong>Trên trục Ox:</strong> Các bóng bi cách đều nhau trong những khoảng thời gian bằng nhau $\rightarrow$ <span class="text-cyan-700">Chuyển động thẳng đều</span>.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Right 7 Cols: Interactive SVG Diagram switching between Mode 1 & Mode 2 -->
+                <div class="lg:col-span-7 bg-white border-2 border-slate-200 rounded-2xl p-4 shadow-md flex flex-col justify-between">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                        <span id="s4-diagram-caption" class="text-sm font-extrabold text-[#822675]">
+                            Bấm nút "Chiếu bóng bi" để xem hình chiếu lên phương ngang và phương đứng
+                        </span>
+                        <button onclick="animateSlide4Projection()" id="btn-s4-anim" class="px-3.5 py-1 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-900 font-extrabold text-xs shadow transition">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Chiếu bóng bi lên 2 trục
+                        </button>
+                    </div>
+
+                    <!-- SVG Mode 1: Stroboscopic Ball Projections (Video 1: 04:05) -->
+                    <svg id="s4-svg-proj" viewBox="0 0 650 360" class="w-full h-auto">
+                        <!-- Top Horizontal Projection Axis -->
+                        <line x1="110" y1="55" x2="600" y2="55" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,4"/>
+                        <text x="355" y="28" text-anchor="middle" fill="#822675" font-size="14" font-weight="bold">
+                            Khoảng cách ngang bằng nhau ⇒ Chuyển động thẳng đều
+                        </text>
+
+                        <!-- Left Vertical Free Fall Column -->
+                        <text x="58" y="38" text-anchor="middle" fill="#7c2d86" font-size="13" font-weight="bold">Phương đứng</text>
+
+                        <!-- 6 Time intervals: i = 0..5 -->
+                        <!-- Coordinates: x = 110 + i*88, y = 55 + 11.2 * i^2 -->
+                        <!-- Horizontal cyan lines -->
+                        <g stroke="#38bdf8" stroke-width="2">
+                            <line x1="75" y1="55" x2="565" y2="55"/>
+                            <line x1="75" y1="66" x2="565" y2="66"/>
+                            <line x1="75" y1="100" x2="565" y2="100"/>
+                            <line x1="75" y1="156" x2="565" y2="156"/>
+                            <line x1="75" y1="234" x2="565" y2="234"/>
+                            <line x1="75" y1="335" x2="565" y2="335"/>
+                        </g>
+
+                        <!-- Vertical dashed projection lines from parabola up to Ox -->
+                        <g id="s4-vert-lines" opacity="0.25" stroke="#f472b6" stroke-width="2" stroke-dasharray="5,5">
+                            <line x1="198" y1="55" x2="198" y2="66"/>
+                            <line x1="286" y1="55" x2="286" y2="100"/>
+                            <line x1="374" y1="55" x2="374" y2="156"/>
+                            <line x1="462" y1="55" x2="462" y2="234"/>
+                            <line x1="550" y1="55" x2="550" y2="335"/>
+                        </g>
+
+                        <!-- Top Ox Projected Pink Shadows (Equally spaced!) -->
+                        <g id="s4-ox-shadows" opacity="0.3">
+                            <circle cx="110" cy="55" r="11" fill="#f9a8d4" stroke="#ec4899" stroke-width="2"/>
+                            <circle cx="198" cy="55" r="11" fill="#f9a8d4" stroke="#ec4899" stroke-width="2"/>
+                            <circle cx="286" cy="55" r="11" fill="#f9a8d4" stroke="#ec4899" stroke-width="2"/>
+                            <circle cx="374" cy="55" r="11" fill="#f9a8d4" stroke="#ec4899" stroke-width="2"/>
+                            <circle cx="462" cy="55" r="11" fill="#f9a8d4" stroke="#ec4899" stroke-width="2"/>
+                            <circle cx="550" cy="55" r="11" fill="#f9a8d4" stroke="#ec4899" stroke-width="2"/>
+                        </g>
+
+                        <!-- Left Oy Purple Balls (Free fall) -->
+                        <g>
+                            <circle cx="75" cy="55" r="11" fill="#7c2d86"/>
+                            <circle cx="75" cy="66" r="11" fill="#7c2d86"/>
+                            <circle cx="75" cy="100" r="11" fill="#7c2d86"/>
+                            <circle cx="75" cy="156" r="11" fill="#7c2d86"/>
+                            <circle cx="75" cy="234" r="11" fill="#7c2d86"/>
+                            <circle cx="75" cy="335" r="11" fill="#7c2d86"/>
+                        </g>
+
+                        <!-- Parabolic Pink Balls -->
+                        <g>
+                            <circle cx="110" cy="55" r="11" fill="#ff758f" stroke="#be123c" stroke-width="1.5"/>
+                            <circle cx="198" cy="66" r="11" fill="#ff758f" stroke="#be123c" stroke-width="1.5"/>
+                            <circle cx="286" cy="100" r="11" fill="#ff758f" stroke="#be123c" stroke-width="1.5"/>
+                            <circle cx="374" cy="156" r="11" fill="#ff758f" stroke="#be123c" stroke-width="1.5"/>
+                            <circle cx="462" cy="234" r="11" fill="#ff758f" stroke="#be123c" stroke-width="1.5"/>
+                            <circle cx="550" cy="335" r="11" fill="#ff758f" stroke="#be123c" stroke-width="1.5"/>
+                        </g>
+                    </svg>
+
+                    <!-- SVG Mode 2: OLM Oxy Coordinate & Vector M Diagram (Video 1: 04:45 & 05:25) -->
+                    <svg id="s4-svg-vec" viewBox="0 0 650 360" class="w-full h-auto hidden">
+                        <defs>
+                            <marker id="arr-black" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#1e293b"/>
+                            </marker>
+                            <marker id="arr-purple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#822675"/>
+                            </marker>
+                            <marker id="arr-orange" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+                            </marker>
+                        </defs>
+
+                        <!-- Axes Ox and Oy -->
+                        <line x1="90" y1="55" x2="580" y2="55" stroke="#1e293b" stroke-width="2.5" marker-end="url(#arr-black)"/>
+                        <text x="590" y="60" font-family="'Times New Roman', serif" font-size="22" font-style="italic" font-weight="bold">x</text>
+
+                        <line x1="90" y1="55" x2="90" y2="335" stroke="#1e293b" stroke-width="2.5" marker-end="url(#arr-black)"/>
+                        <text x="68" y="340" font-family="'Times New Roman', serif" font-size="22" font-style="italic" font-weight="bold">y</text>
+                        <text x="68" y="50" font-family="'Times New Roman', serif" font-size="22" font-weight="bold">O</text>
+
+                        <!-- Blue Parabolic Trajectory Curve -->
+                        <path d="M 90 55 Q 290 55 475 325" fill="none" stroke="#0284c7" stroke-width="4"/>
+
+                        <!-- Origin Red Ball & Purple v0 vector -->
+                        <circle cx="90" cy="55" r="10" fill="#e11d48"/>
+                        <line x1="90" y1="55" x2="195" y2="55" stroke="#822675" stroke-width="4" marker-end="url(#arr-purple)"/>
+                        <text x="145" y="42" fill="#822675" font-family="'Times New Roman', serif" font-size="22" font-weight="bold" font-style="italic">v⃗₀</text>
+
+                        <!-- Point M on Trajectory: (310, 148) -->
+                        <line x1="310" y1="55" x2="310" y2="148" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5,5"/>
+                        <line x1="90" y1="148" x2="310" y2="148" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5,5"/>
+
+                        <text x="300" y="42" font-family="'Times New Roman', serif" font-size="20" font-style="italic">dₓ</text>
+                        <text x="55" y="154" font-family="'Times New Roman', serif" font-size="20" font-style="italic">dᵧ</text>
+
+                        <!-- Velocity Parallelogram at Point M -->
+                        <!-- vx -->
+                        <line x1="310" y1="148" x2="415" y2="148" stroke="#d97706" stroke-width="3.5" marker-end="url(#arr-orange)"/>
+                        <text x="375" y="136" fill="#b45309" font-family="'Times New Roman', serif" font-size="22" font-weight="bold" font-style="italic">v⃗ₓ</text>
+
+                        <!-- vy -->
+                        <line x1="310" y1="148" x2="310" y2="250" stroke="#d97706" stroke-width="3.5" marker-end="url(#arr-orange)"/>
+                        <text x="278" y="215" fill="#b45309" font-family="'Times New Roman', serif" font-size="22" font-weight="bold" font-style="italic">v⃗ᵧ</text>
+
+                        <!-- Dashed parallelogram completion -->
+                        <line x1="415" y1="148" x2="415" y2="250" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4,4"/>
+                        <line x1="310" y1="250" x2="415" y2="250" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4,4"/>
+
+                        <!-- Total velocity vM -->
+                        <line x1="310" y1="148" x2="415" y2="250" stroke="#d97706" stroke-width="4" marker-end="url(#arr-orange)"/>
+                        <text x="425" y="258" fill="#b45309" font-family="'Times New Roman', serif" font-size="22" font-weight="bold" font-style="italic">v⃗<tspan font-size="15" dy="4">M</tspan></text>
+
+                        <circle cx="310" cy="148" r="10" fill="#e11d48"/>
+                        <text x="318" y="135" fill="#e11d48" font-family="'Times New Roman', serif" font-size="20" font-weight="bold">M</text>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             SLIDE 5: THÀNH PHẦN THEO PHƯƠNG THẲNG ĐỨNG Oy (Video 1: 05:16 - 08:28)
+             ===================================================== -->
+        <section id="slide-5" class="slide-view olm-grid-page w-full h-full max-w-[1440px] flex-col justify-between p-6 lg:p-10 slide-scroll overflow-y-auto" data-steps="6">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b-2 border-purple-100 pb-2.5">
+                <div class="flex items-center gap-3">
+                    <span class="w-9 h-9 rounded-full bg-[#9b3089] text-white flex items-center justify-center shadow">
+                        <i class="fa-solid fa-play text-sm ml-0.5"></i>
+                    </span>
+                    <h2 class="font-baloo text-xl lg:text-2xl font-extrabold text-[#822675]">
+                        Phân tích kết quả thí nghiệm - Thành phần chuyển động theo phương thẳng đứng
+                    </h2>
+                </div>
+                <span class="text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-amber-100 text-amber-900">
+                    6 bước bấm (Space)
+                </span>
+            </div>
+
+            <!-- Main Content Grid (Matches Video 1 at 06:58 & 08:28 100%) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto py-2 items-center flex-1">
+                <!-- Left 7 Cols: Formulas in Yellow OLM Boxes & Star Conclusions -->
+                <div class="lg:col-span-7 space-y-3 text-lg lg:text-xl font-bold text-[#7c256c]">
+                    <p class="leading-snug">
+                        Bỏ qua sức cản của không khí, chuyển động thành phần theo phương thẳng đứng của vật là <strong>chuyển động rơi tự do</strong>:
+                    </p>
+
+                    <!-- Step 1: v0y = 0 and ay = g -->
+                    <div class="step-item flex flex-wrap items-center gap-6" data-step="1">
+                        <div class="flex items-center gap-2">
+                            <span>• Vận tốc ban đầu:</span>
+                            <span class="olm-yellow-box math-text text-xl font-bold">v<sub>0y</sub> = 0</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span>• Gia tốc:</span>
+                            <span class="olm-yellow-box math-text text-xl font-bold">a<sub>y</sub> = g</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: vy = g.t -->
+                    <div class="step-item flex items-center gap-3" data-step="2">
+                        <span>• Vận tốc tức thời tại thời điểm <i>t</i>:</span>
+                        <span class="olm-yellow-box math-text text-xl font-bold">v<sub>y</sub> = g · t</span>
+                    </div>
+
+                    <!-- Step 3: dy = 1/2 g.t^2 -->
+                    <div class="step-item flex items-center gap-3" data-step="3">
+                        <span>• Độ dịch chuyển theo phương thẳng đứng:</span>
+                        <span class="olm-yellow-box math-text text-xl font-bold">
+                            d<sub>y</sub> = <span class="frac"><span>1</span><span>2</span></span> g · t<sup>2</sup>
+                        </span>
+                    </div>
+
+                    <!-- Step 4: Height H & Maximum Falling Time t_max -->
+                    <div class="step-item flex flex-wrap items-center gap-3 pt-1" data-step="4">
+                        <span>• Khi chạm đất (<span class="math-text">d<sub>y max</sub> = H</span>):</span>
+                        <span class="olm-yellow-box math-text text-xl font-bold">
+                            H = <span class="frac"><span>1</span><span>2</span></span> g · t<sub>max</sub><sup>2</sup>
+                        </span>
+                        <span class="text-amber-500 font-black text-2xl">⇒</span>
+                        <span>Thời gian rơi:</span>
+                        <span class="olm-yellow-box math-text text-xl font-bold border-rose-500 bg-amber-100">
+                            t<sub>max</sub> = <span class="sqrt-wrap"><span class="sqrt-sign">√</span><span class="sqrt-body"><span class="frac"><span>2H</span><span>g</span></span></span></span>
+                        </span>
+                    </div>
+
+                    <!-- Step 5 & 6: Two Yellow Asterisk Conclusions (Video 1: 08:28) -->
+                    <div class="pt-2 space-y-2 text-base lg:text-lg">
+                        <div class="step-item flex items-start gap-2.5 bg-white/80 p-2.5 rounded-xl border border-purple-100" data-step="5">
+                            <span class="text-amber-500 font-black text-2xl leading-none mt-0.5">✱</span>
+                            <p>
+                                Thời gian rơi của vật bị ném ngang <strong>chỉ phụ thuộc độ cao <span class="math-text">H</span></strong> của vật khi bị ném, <strong>không phụ thuộc vận tốc ném <span class="math-text">v₀</span></strong>.
+                            </p>
+                        </div>
+                        <div class="step-item flex items-start gap-2.5 bg-white/80 p-2.5 rounded-xl border border-purple-100" data-step="6">
+                            <span class="text-amber-500 font-black text-2xl leading-none mt-0.5">✱</span>
+                            <p>
+                                Nếu từ cùng một độ cao, đồng thời ném ngang các vật khác nhau với các vận tốc khác nhau thì chúng đều <strong>rơi xuống đất cùng một lúc</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 5 Cols: Pink Formula Reminder Box + Coordinate Graph with H -->
+                <div class="lg:col-span-5 flex flex-col justify-between space-y-4">
+                    <!-- OLM Pink Reminder Box (Top Right in Video 1: 05:35) -->
+                    <div class="olm-pink-box shadow-sm">
+                        <div class="text-xs font-extrabold uppercase text-[#822675] mb-1">
+                            Nhắc lại công thức biến đổi đều:
+                        </div>
+                        <div class="math-text text-lg font-bold space-y-1 text-slate-900">
+                            <div>• <i>v<sub>t</sub> = v<sub>0</sub> + a · t</i></div>
+                            <div>• <i>d = v<sub>0</sub> · t + <span class="frac"><span>1</span><span>2</span></span> a · t<sup>2</sup></i></div>
+                            <div>• <i>v<sub>t</sub><sup>2</sup> - v<sub>0</sub><sup>2</sup> = 2 · a · d</i></div>
+                        </div>
+                    </div>
+
+                    <!-- Coordinate Graph with H = dy_max (Video 1: 06:58) -->
+                    <div class="bg-white border-2 border-slate-200 rounded-2xl p-3 shadow-sm">
+                        <svg viewBox="0 0 460 265" class="w-full h-auto">
+                            <defs>
+                                <marker id="s5-arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#1e293b"/>
+                                </marker>
+                            </defs>
+                            <!-- Axes -->
+                            <line x1="75" y1="35" x2="420" y2="35" stroke="#1e293b" stroke-width="2" marker-end="url(#s5-arr)"/>
+                            <text x="430" y="40" font-family="'Times New Roman', serif" font-size="18" font-style="italic" font-weight="bold">x</text>
+
+                            <line x1="75" y1="35" x2="75" y2="245" stroke="#1e293b" stroke-width="2" marker-end="url(#s5-arr)"/>
+                            <text x="55" y="250" font-family="'Times New Roman', serif" font-size="18" font-style="italic" font-weight="bold">y</text>
+                            <text x="55" y="32" font-family="'Times New Roman', serif" font-size="18" font-weight="bold">O</text>
+
+                            <!-- Blue Trajectory -->
+                            <path d="M 75 35 Q 230 35 375 215" fill="none" stroke="#0284c7" stroke-width="3.5"/>
+
+                            <!-- Ground Line at y = 215 -->
+                            <line x1="75" y1="215" x2="395" y2="215" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,5"/>
+                            <text x="15" y="220" fill="#be123c" font-family="'Times New Roman', serif" font-size="16" font-weight="bold">H = d<tspan font-size="11" dy="3">y max</tspan></text>
+
+                            <!-- Point M -->
+                            <line x1="235" y1="35" x2="235" y2="105" stroke="#94a3b8" stroke-dasharray="4,4"/>
+                            <line x1="75" y1="105" x2="235" y2="105" stroke="#94a3b8" stroke-dasharray="4,4"/>
+                            <text x="48" y="110" font-family="'Times New Roman', serif" font-size="16" font-style="italic">dᵧ</text>
+                            <text x="228" y="25" font-family="'Times New Roman', serif" font-size="16" font-style="italic">dₓ</text>
+
+                            <circle cx="75" cy="35" r="8" fill="#e11d48"/>
+                            <circle cx="235" cy="105" r="8" fill="#e11d48"/>
+                            <text x="245" y="98" fill="#e11d48" font-weight="bold" font-size="15">M</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             SLIDE 6: THÀNH PHẦN THEO PHƯƠNG NGANG Ox & MẸO "CÂY CẦU THỜI GIAN"
+             ===================================================== -->
+        <section id="slide-6" class="slide-view olm-grid-page w-full h-full max-w-[1440px] flex-col justify-between p-6 lg:p-10 slide-scroll overflow-y-auto" data-steps="4">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b-2 border-purple-100 pb-3">
+                <div class="flex items-center gap-3">
+                    <span class="w-9 h-9 rounded-full bg-[#9b3089] text-white flex items-center justify-center shadow">
+                        <i class="fa-solid fa-play text-sm ml-0.5"></i>
+                    </span>
+                    <h2 class="font-baloo text-xl lg:text-2xl font-extrabold text-[#822675]">
+                        Thành phần chuyển động theo phương nằm ngang (Ox) & Tầm bay xa L
+                    </h2>
+                </div>
+                <span class="text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-cyan-100 text-cyan-900">
+                    4 bước bấm (Space)
+                </span>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto py-2 items-center flex-1">
+                <!-- Left 6 Cols: Horizontal Component Formulas (OLM Style) -->
+                <div class="lg:col-span-6 space-y-4 text-lg lg:text-xl font-bold text-[#7c256c]">
+                    <p>
+                        Theo phương nằm ngang <span class="math-text">Ox</span>, vật không chịu tác dụng của lực nào nên chuyển động là <strong>chuyển động thẳng đều</strong>:
+                    </p>
+
+                    <!-- Step 1 -->
+                    <div class="step-item space-y-2.5" data-step="1">
+                        <div class="flex items-center gap-3">
+                            <span>• Gia tốc ngang:</span>
+                            <span class="olm-yellow-box math-text text-xl font-bold">a<sub>x</sub> = 0</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span>• Vận tốc ngang (không đổi):</span>
+                            <span class="olm-yellow-box math-text text-xl font-bold">v<sub>x</sub> = v<sub>0x</sub> = v<sub>0</sub></span>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="step-item flex items-center gap-3" data-step="2">
+                        <span>• Độ dịch chuyển ngang:</span>
+                        <span class="olm-yellow-box math-text text-xl font-bold">d<sub>x</sub> = v<sub>0</sub> · t</span>
+                    </div>
+
+                    <!-- Step 3: Maximum Horizontal Range L -->
+                    <div class="step-item space-y-2 pt-1" data-step="3">
+                        <div class="text-base text-slate-600 font-semibold">
+                            Khoảng cách xa nhất theo phương ngang từ chỗ ném đến chỗ chạm đất gọi là <strong>Tầm bay xa <span class="math-text">L</span></strong>:
+                        </div>
+                        <div class="olm-yellow-box math-text text-2xl font-bold border-rose-500 bg-amber-100 py-2 px-5">
+                            L = d<sub>x max</sub> = v<sub>0</sub> · t<sub>max</sub> = v<sub>0</sub> · <span class="sqrt-wrap"><span class="sqrt-sign">√</span><span class="sqrt-body"><span class="frac"><span>2H</span><span>g</span></span></span></span>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Impact Velocity Pytago -->
+                    <div class="step-item pt-1" data-step="4">
+                        <div class="bg-[#fceef5] border-2 border-[#9b3089] rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-2">
+                            <span>• Vận tốc khi chạm đất:</span>
+                            <span class="olm-yellow-box math-text text-xl font-bold">
+                                v = <span class="sqrt-wrap"><span class="sqrt-sign">√</span><span class="sqrt-body">v<sub>x</sub><sup>2</sup> + v<sub>y</sub><sup>2</sup></span></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 6 Cols: Teacher's Pedagogical Trick "Cây Cầu Thời Gian t" -->
+                <div class="lg:col-span-6 bg-white border-2 border-amber-300 rounded-2xl p-5 shadow-md space-y-4">
+                    <div class="flex items-center justify-between border-b border-amber-200 pb-2">
+                        <span class="font-baloo text-xl font-extrabold text-[#822675] flex items-center gap-2">
+                            <i class="fa-solid fa-lightbulb text-amber-500 text-2xl"></i> MẸO NHỚ BẢN CHẤT: "CÂY CẦU THỜI GIAN t"
+                        </span>
+                        <span class="text-xs font-extrabold px-2.5 py-1 rounded bg-amber-100 text-amber-800">Không bao giờ nhầm công thức!</span>
+                    </div>
+
+                    <div class="grid grid-cols-11 gap-2 items-center text-center">
+                        <!-- Column Oy -->
+                        <div class="col-span-4 bg-rose-50 border-2 border-rose-300 rounded-xl p-3 space-y-1.5">
+                            <div class="text-xs font-extrabold uppercase text-rose-700">Phòng Đứng Oy</div>
+                            <div class="font-extrabold text-sm text-[#822675]">RƠI TỰ DO</div>
+                            <div class="math-text font-bold text-base bg-white rounded py-1 border border-rose-200">
+                                H = ½ · g · t²
+                            </div>
+                            <div class="text-xs text-slate-600 font-semibold">Biết độ cao H $\rightarrow$ Tìm t</div>
+                        </div>
+
+                        <!-- Bridge t -->
+                        <div class="col-span-3 flex flex-col items-center justify-center px-1">
+                            <div class="w-full bg-amber-400 text-slate-950 font-black text-xs py-1.5 px-2 rounded-lg shadow">
+                                CẦU THỜI GIAN
+                            </div>
+                            <div class="math-text font-black text-2xl text-rose-600 my-1">t</div>
+                            <div class="text-[11px] font-bold text-slate-600 leading-tight">
+                                Đi xuyên qua 2 trục
+                            </div>
+                        </div>
+
+                        <!-- Column Ox -->
+                        <div class="col-span-4 bg-cyan-50 border-2 border-cyan-300 rounded-xl p-3 space-y-1.5">
+                            <div class="text-xs font-extrabold uppercase text-cyan-800">Phòng Ngang Ox</div>
+                            <div class="font-extrabold text-sm text-[#822675]">THẲNG ĐỀU</div>
+                            <div class="math-text font-bold text-base bg-white rounded py-1 border border-cyan-200">
+                                L = v₀ · t
+                            </div>
+                            <div class="text-xs text-slate-600 font-semibold">Thay t vào $\rightarrow$ Ra tầm xa L</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#fff8e6] border border-amber-300 rounded-xl p-3 text-sm font-bold text-slate-700 leading-relaxed">
+                        <strong class="text-rose-600">Quy tắc vàng khi làm bài tập:</strong> Luôn nhìn vào độ cao <span class="math-text font-bold">H</span> để tính thời gian rơi <span class="math-text font-bold">t = √(2H/g)</span> trước tiên, sau đó đem <span class="math-text font-bold">t</span> nhân với vận tốc ngang <span class="math-text font-bold">v₀</span> để ra tầm xa <span class="math-text font-bold">L</span>!
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             SLIDE 7: BÀI TẬP VẬN DỤNG 1 – NÉM ĐÁ VEN BIỂN (Video 2: 00:15 - 01:53)
+             ===================================================== -->
+        <section id="slide-7" class="slide-view olm-grid-page w-full h-full max-w-[1440px] flex-col justify-between p-6 lg:p-10 slide-scroll overflow-y-auto" data-steps="4">
+            <!-- Problem Statement Box with OLM Question Mark Icon -->
+            <div class="bg-white/95 border-2 border-purple-200 rounded-2xl p-5 shadow-sm relative">
+                <div class="flex items-start gap-4">
+                    <!-- OLM Pink/Purple Question Mark Badge -->
+                    <div class="w-12 h-12 rounded-2xl bg-[#f3d1e6] border-2 border-[#9b3089] text-[#9b3089] font-baloo text-4xl font-extrabold flex items-center justify-center shrink-0 shadow-sm">
+                        ?
+                    </div>
+                    <div class="text-lg lg:text-xl font-bold text-[#7c256c] leading-relaxed">
+                        Một người đứng từ một đài quan sát ven biển, ném một hòn đá theo phương nằm ngang hướng ra biển với vận tốc <span class="text-rose-600 font-extrabold">10 m/s</span>. Biết độ cao từ vị trí ném so với mặt biển là <span class="text-rose-600 font-extrabold">50 m</span>. Bỏ qua sức cản của không khí.
+                        <div class="mt-1.5 space-y-0.5 text-[#822675]">
+                            <div>a. Sau bao lâu thì hòn đá chạm mặt biển?</div>
+                            <div>b. Tầm xa của hòn đá là bao nhiêu mét?</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column OLM Solution Layout: Tóm tắt (Left) | Giải (Right) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto py-3 flex-1 items-stretch">
+                <!-- Left 4 Cols: Tóm tắt (Video 2: 00:35) -->
+                <div class="lg:col-span-4 bg-white/80 border-r-0 lg:border-r-2 border-slate-300 rounded-2xl lg:rounded-r-none p-5 flex flex-col justify-start">
+                    <h3 class="font-baloo text-2xl font-extrabold text-[#822675] italic underline decoration-2 mb-4 text-center">
+                        Tóm tắt
+                    </h3>
+
+                    <!-- Step 1: Given values -->
+                    <div class="step-item math-text text-2xl font-bold text-[#7c256c] space-y-2 pl-4" data-step="1">
+                        <div><i>v<sub>0y</sub></i> = 0</div>
+                        <div><i>v<sub>0x</sub> = v</i> = 10 m/s</div>
+                        <div><i>H</i> = 50 m</div>
+                        <div><i>g</i> = 9,8 m/s<sup>2</sup></div>
+                    </div>
+
+                    <!-- Step 2: Unknowns -->
+                    <div class="step-item math-text text-2xl font-bold text-[#7c256c] space-y-2 pl-4 mt-3 pt-3 border-t-2 border-slate-400" data-step="2">
+                        <div>a, <i>t</i> = ?</div>
+                        <div>b, <i>L</i> = ?</div>
+                    </div>
+                </div>
+
+                <!-- Right 8 Cols: Giải (Video 2: 01:15 - 01:53) -->
+                <div class="lg:col-span-8 bg-white/80 rounded-2xl p-5 flex flex-col justify-start space-y-6">
+                    <h3 class="font-baloo text-2xl font-extrabold text-[#822675] italic underline decoration-2 text-center">
+                        Giải
+                    </h3>
+
+                    <!-- Step 3: Part a -->
+                    <div class="step-item space-y-3 text-xl lg:text-2xl font-bold text-[#7c256c]" data-step="3">
+                        <div>a. Thời gian để hòn đá chạm mặt biển là:</div>
+                        <div class="pl-6">
+                            <span class="olm-yellow-box math-text text-2xl py-2 px-5">
+                                <i>t</i> = <span class="sqrt-wrap"><span class="sqrt-sign">√</span><span class="sqrt-body"><span class="frac"><span>2<i>H</i></span><span><i>g</i></span></span></span></span>
+                                = <span class="sqrt-wrap"><span class="sqrt-sign">√</span><span class="sqrt-body"><span class="frac"><span>2 · 50</span><span>9,8</span></span></span></span>
+                                ≈ <strong>3,2 s</strong>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Part b -->
+                    <div class="step-item space-y-3 text-xl lg:text-2xl font-bold text-[#7c256c]" data-step="4">
+                        <div>b. Tầm xa của hòn đá là:</div>
+                        <div class="pl-6">
+                            <span class="olm-yellow-box math-text text-2xl py-2 px-5">
+                                <i>L = v<sub>0</sub> · t</i> = 10 · 3,2 = <strong>32 m</strong>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             SLIDE 8: BÀI TẬP VẬN DỤNG 2 – MÁY BAY THẢ HÀNG CỨU TRỢ (Video 2: 01:55 - 04:45)
+             ===================================================== -->
+        <section id="slide-8" class="slide-view olm-grid-page w-full h-full max-w-[1440px] flex-col justify-between p-6 lg:p-9 slide-scroll overflow-y-auto" data-steps="5">
+            <!-- Problem Statement Box (Video 2: 02:00) -->
+            <div class="bg-white/95 border-2 border-purple-200 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-start gap-4">
+                    <div class="w-11 h-11 rounded-2xl bg-[#f3d1e6] border-2 border-[#9b3089] text-[#9b3089] font-baloo text-3xl font-extrabold flex items-center justify-center shrink-0 shadow-sm">
+                        ?
+                    </div>
+                    <div class="text-base lg:text-lg font-bold text-[#7c256c] leading-snug">
+                        Một máy bay chở hàng đang bay ngang ở độ cao <span class="text-rose-600 font-extrabold">520 m</span> với vận tốc <span class="text-rose-600 font-extrabold">100 m/s</span> thì thả một gói hàng cứu trợ xuống một làng đang bị lũ lụt. Lấy <span class="math-text font-bold">g = 9,8 m/s²</span> và bỏ qua sức cản của không khí.
+                        <div class="mt-1 flex flex-wrap gap-x-6 gap-y-1 text-[#822675]">
+                            <span>a. Sau bao lâu thì gói hàng chạm đất?</span>
+                            <span>b. Tầm xa của gói hàng là bao nhiêu?</span>
+                            <span>c. Xác định vận tốc của gói hàng khi chạm đất?</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3-Column OLM Layout: Tóm tắt (3 Cols) | Giải (6 Cols) | Hình vẽ Vectơ câu c (3 Cols) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 my-auto py-2 flex-1 items-stretch">
+                <!-- Left 3 Cols: Tóm tắt -->
+                <div class="lg:col-span-3 bg-white/85 border-r-0 lg:border-r-2 border-slate-300 rounded-2xl lg:rounded-r-none p-4">
+                    <h3 class="font-baloo text-xl font-extrabold text-[#822675] italic underline mb-3 text-center">
+                        Tóm tắt
+                    </h3>
+                    <div class="step-item math-text text-xl font-bold text-[#7c256c] space-y-1.5" data-step="1">
+                        <div><i>v<sub>0y</sub></i> = 0</div>
+                        <div><i>v<sub>0x</sub> = v</i> = 100 m/s</div>
+                        <div><i>H</i> = 520 m</div>
+                        <div><i>g</i> = 9,8 m/s<sup>2</sup></div>
+                        <div class="pt-2 mt-2 border-t-2 border-slate-400 space-y-1">
+                            <div>a, <i>t</i> = ?</div>
+                            <div>b, <i>L</i> = ?</div>
+                            <div>c, <i>v<sub>chạm đất</sub></i> = ?</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle 6 Cols: Giải (Parts a, b, and c) -->
+                <div class="lg:col-span-6 bg-white/85 p-4 space-y-3 text-lg font-bold text-[#7c256c]">
+                    <h3 class="font-baloo text-xl font-extrabold text-[#822675] italic underline text-center">
+                        Giải
+                    </h3>
+
+                    <!-- Step 2: Part a & b -->
+                    <div class="step-item grid grid-cols-1 sm:grid-cols-2 gap-3" data-step="2">
+                        <div class="bg-purple-50/70 p-2.5 rounded-xl border border-purple-100">
+                            <div class="text-sm">a. Thời gian gói hàng chạm đất:</div>
+                            <div class="math-text text-lg mt-1">
+                                <i>t</i> = <span class="sqrt-wrap"><span class="sqrt-sign">√</span><span class="sqrt-body"><span class="frac"><span>2·520</span><span>9,8</span></span></span></span> ≈ <strong class="text-rose-600">10,3 s</strong>
+                            </div>
+                        </div>
+                        <div class="bg-purple-50/70 p-2.5 rounded-xl border border-purple-100">
+                            <div class="text-sm">b. Tầm xa của gói hàng:</div>
+                            <div class="math-text text-lg mt-2">
+                                <i>L = v<sub>0</sub>·t</i> = 100 · 10,3 = <strong class="text-rose-600">1030 m</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Part c - vx & vy -->
+                    <div class="step-item space-y-1.5 pt-1 border-t border-purple-100" data-step="3">
+                        <div class="text-base text-[#822675]">c. Xác định vận tốc khi chạm đất:</div>
+                        <div class="text-base">
+                            • Vì theo phương ngang gói hàng chuyển động thẳng đều:
+                            <span class="math-text text-xl ml-1 text-rose-600 font-bold"><i>v<sub>x</sub> = v<sub>0</sub></i> = 100 m/s</span>
+                        </div>
+                        <div class="text-base">
+                            • Theo phương đứng:
+                            <span class="math-text text-xl ml-1 text-rose-600 font-bold"><i>v<sub>y</sub> = g · t</i> = 9,8 · 10,3 = 100,94 m/s</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Part c - Total v = sqrt(vx^2 + vy^2) -->
+                    <div class="step-item pt-1" data-step="5">
+                        <div class="text-base mb-1">• Vận tốc của gói hàng khi chạm đất là:</div>
+                        <div class="olm-yellow-box math-text text-xl font-bold">
+                            <i>v</i> = <span class="sqrt-wrap"><span class="sqrt-sign">√</span><span class="sqrt-body"><i>v<sub>x</sub></i><sup>2</sup> + <i>v<sub>y</sub></i><sup>2</sup></span></span>
+                            = <span class="sqrt-wrap"><span class="sqrt-sign">√</span><span class="sqrt-body">100<sup>2</sup> + 100,94<sup>2</sup></span></span>
+                            ≈ <strong>142,1 m/s</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 3 Cols: Exact Red Vector Diagram from Video 2 (03:50 - 04:45) -->
+                <div class="lg:col-span-3 bg-white/90 rounded-2xl p-4 border border-purple-100 flex flex-col items-center justify-center">
+                    <div class="step-item w-full text-center" data-step="4">
+                        <div class="text-xs font-extrabold uppercase text-[#822675] mb-2">
+                            Tổng hợp vectơ vận tốc (Quy tắc hình bình hành):
+                        </div>
+                        <svg viewBox="0 0 240 240" class="w-full max-w-[210px] mx-auto">
+                            <defs>
+                                <marker id="arr-red-v2" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+                                </marker>
+                            </defs>
+                            <!-- Dashed rectangle completion -->
+                            <line x1="185" y1="45" x2="185" y2="185" stroke="#fb7185" stroke-width="2" stroke-dasharray="6,5"/>
+                            <line x1="45" y1="185" x2="185" y2="185" stroke="#fb7185" stroke-width="2" stroke-dasharray="6,5"/>
+
+                            <!-- vx horizontal arrow -->
+                            <line x1="45" y1="45" x2="185" y2="45" stroke="#e11d48" stroke-width="3.5" marker-end="url(#arr-red-v2)"/>
+                            <text x="115" y="30" fill="#822675" font-family="'Times New Roman', serif" font-size="22" font-weight="bold" font-style="italic">v⃗ₓ</text>
+
+                            <!-- vy vertical arrow -->
+                            <line x1="45" y1="45" x2="45" y2="185" stroke="#e11d48" stroke-width="3.5" marker-end="url(#arr-red-v2)"/>
+                            <text x="12" y="125" fill="#822675" font-family="'Times New Roman', serif" font-size="22" font-weight="bold" font-style="italic">v⃗ᵧ</text>
+
+                            <!-- Resultant v diagonal arrow -->
+                            <line x1="45" y1="45" x2="185" y2="185" stroke="#e11d48" stroke-width="4" marker-end="url(#arr-red-v2)"/>
+                            <text x="195" y="195" fill="#822675" font-family="'Times New Roman', serif" font-size="24" font-weight="bold" font-style="italic">v⃗</text>
+
+                            <!-- Origin dot -->
+                            <circle cx="45" cy="45" r="5" fill="#822675"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =====================================================
+         BOTTOM TEACHER PRESENTATION BAR (OLM THEME)
+         ===================================================== -->
+    <footer class="h-14 w-full bg-[#7c256c] text-white px-4 lg:px-8 flex items-center justify-between shadow-2xl z-50">
+        <!-- Left: Slide Selector & Prev/Next Slide -->
+        <div class="flex items-center gap-2">
+            <button onclick="prevSlide()" class="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 font-bold text-sm transition" title="Slide trước (Mũi tên Trái)">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <select id="slide-jump-select" onchange="goToSlide(parseInt(this.value))" class="bg-[#611954] border border-purple-400/40 text-white font-bold text-xs sm:text-sm rounded-lg px-2.5 py-1.5 focus:outline-none cursor-pointer">
+                <option value="1">Slide 1/8: Bìa "Chuyển động ném" & Mục 01</option>
+                <option value="2">Slide 2/8: Nhắc lại Lực & Khái niệm Ném ngang</option>
+                <option value="3">Slide 3/8: Thí nghiệm Búa gõ 2 bi & Ảnh hoạt nghiệm</option>
+                <option value="4">Slide 4/8: Phân tích kết quả thí nghiệm (2 trục)</option>
+                <option value="5">Slide 5/8: Thành phần phương thẳng đứng Oy</option>
+                <option value="6">Slide 6/8: Thành phần phương ngang Ox & Mẹo Cầu t</option>
+                <option value="7">Slide 7/8: Bài tập 1 - Ném đá từ đài quan sát (Video 2)</option>
+                <option value="8">Slide 8/8: Bài tập 2 - Máy bay thả hàng cứu trợ (Video 2)</option>
+            </select>
+            <button onclick="nextSlide()" class="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 font-bold text-sm transition" title="Slide tiếp theo">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Center: PowerPoint-style Step-by-Step Reveal Controls -->
+        <div class="flex items-center gap-2">
+            <button onclick="advanceStepOrSlide()" class="px-4 py-1.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs sm:text-sm shadow transition flex items-center gap-2" title="Phím cách (Space) hoặc Mũi tên Phải">
+                <i class="fa-solid fa-forward-step"></i>
+                <span>Bước tiếp (<span id="step-counter-label">0/0</span>)</span>
+            </button>
+            <button onclick="revealAllStepsOnCurrentSlide()" class="px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition hidden sm:inline-flex items-center gap-1" title="Hiện toàn bộ nội dung trên trang này">
+                <i class="fa-solid fa-eye"></i> Hiện hết trang
+            </button>
+            <button onclick="resetStepsOnCurrentSlide()" class="px-2.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-purple-200 font-bold text-xs transition hidden md:inline-flex items-center" title="Ẩn lại các bước để giảng lại">
+                <i class="fa-solid fa-rotate-left"></i>
+            </button>
+        </div>
+
+        <!-- Right: OLM Red Laser Pointer, Chalk Pen & Fullscreen -->
+        <div class="flex items-center gap-2">
+            <button onclick="toggleLaserPointer()" id="btn-laser" class="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs sm:text-sm transition flex items-center gap-1.5" title="Bật chấm đỏ chỉ bài giống cô giáo OLM">
+                <span class="w-3 h-3 rounded-full bg-red-500 inline-block shadow-[0_0_8px_#ef4444]"></span>
+                <span class="hidden md:inline">Trỏ đỏ OLM</span>
+            </button>
+            <button onclick="toggleDrawPen()" id="btn-pen" class="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs sm:text-sm transition flex items-center gap-1.5" title="Bút vẽ lên slide">
+                <i class="fa-solid fa-pen text-amber-300"></i> <span class="hidden md:inline">Bút vẽ</span>
+            </button>
+            <button onclick="clearDrawingCanvas()" class="px-2.5 py-1.5 rounded-lg bg-white/15 hover:bg-rose-500/40 text-white text-xs sm:text-sm transition" title="Xóa nét vẽ">
+                <i class="fa-solid fa-eraser"></i>
+            </button>
+            <button onclick="toggleFullScreen()" class="px-3 py-1.5 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-extrabold text-xs sm:text-sm transition flex items-center gap-1.5">
+                <i class="fa-solid fa-expand"></i> <span class="hidden lg:inline">Toàn màn hình</span>
+            </button>
+        </div>
+    </footer>
+
+    <!-- =====================================================
+         JAVASCRIPT ENGINE FOR OLM SLIDES & SIMULATIONS
+         ===================================================== -->
+    <script>
+        /* ---------------------------------------------------
+           1. SLIDE & STEP-BY-STEP REVEAL CONTROLLER
+           --------------------------------------------------- */
+        let currentSlide = 1;
+        const totalSlides = 8;
+        let currentStep = 0;
+        let maxSteps = 0;
+
+        function updateStepCounterUI() {
+            const slideEl = document.getElementById(`slide-${currentSlide}`);
+            maxSteps = parseInt(slideEl.getAttribute('data-steps') || '0');
+            document.getElementById('step-counter-label').textContent = `${currentStep}/${maxSteps}`;
+        }
+
+        function goToSlide(n) {
+            if (n < 1 || n > totalSlides) return;
+            document.querySelectorAll('.slide-view').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(`slide-${n}`);
+            target.classList.add('active');
+            currentSlide = n;
+            document.getElementById('slide-jump-select').value = n;
+
+            // Reset steps to 0 when entering a slide so teacher can click through,
+            // or show step 0 cleanly
+            currentStep = 0;
+            const items = target.querySelectorAll('.step-item');
+            items.forEach(el => el.classList.remove('shown'));
+            updateStepCounterUI();
+            clearDrawingCanvas();
+
+            if (n === 3) {
+                setTimeout(() => drawApparatusScene(), 30);
+            }
+        }
+
+        function advanceStepOrSlide() {
+            const slideEl = document.getElementById(`slide-${currentSlide}`);
+            maxSteps = parseInt(slideEl.getAttribute('data-steps') || '0');
+
+            // Special case on Slide 1: switch from Main Cover to Section 01 Cover before going to Slide 2
+            if (currentSlide === 1) {
+                const sec1Hidden = document.getElementById('cover-sec1-box').classList.contains('hidden');
+                if (sec1Hidden) {
+                    switchCoverMode('sec1');
+                    return;
+                } else {
+                    nextSlide();
+                    return;
+                }
+            }
+
+            if (currentStep < maxSteps) {
+                currentStep++;
+                const items = slideEl.querySelectorAll(`.step-item[data-step="${currentStep}"]`);
+                items.forEach(el => el.classList.add('shown'));
+                updateStepCounterUI();
+
+                // Trigger synchronized simulation effects on Slide 3
+                if (currentSlide === 3 && currentStep === 3) {
+                    strikeHammerExperiment();
+                }
+                if (currentSlide === 3 && currentStep === 4) {
+                    apparatusState.strobePhotoMode = true;
+                    drawApparatusScene();
+                }
+            } else if (currentSlide < totalSlides) {
+                nextSlide();
+            }
+        }
+
+        function revealAllStepsOnCurrentSlide() {
+            const slideEl = document.getElementById(`slide-${currentSlide}`);
+            maxSteps = parseInt(slideEl.getAttribute('data-steps') || '0');
+            currentStep = maxSteps;
+            slideEl.querySelectorAll('.step-item').forEach(el => el.classList.add('shown'));
+            updateStepCounterUI();
+        }
+
+        function resetStepsOnCurrentSlide() {
+            const slideEl = document.getElementById(`slide-${currentSlide}`);
+            currentStep = 0;
+            slideEl.querySelectorAll('.step-item').forEach(el => el.classList.remove('shown'));
+            updateStepCounterUI();
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) goToSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) goToSlide(currentSlide - 1);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            if (e.code === 'Space' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                advanceStepOrSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+
+        /* ---------------------------------------------------
+           2. SLIDE 1: COVER PAGE & BASKETBALL ANIMATION
+           --------------------------------------------------- */
+        function switchCoverMode(mode) {
+            const mainBox = document.getElementById('cover-main-box');
+            const sec1Box = document.getElementById('cover-sec1-box');
+            const btnMain = document.getElementById('btn-cover-main');
+            const btnSec1 = document.getElementById('btn-cover-sec1');
+
+            if (mode === 'main') {
+                mainBox.classList.remove('hidden');
+                sec1Box.classList.add('hidden');
+                btnMain.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-[#ff6b6b] text-white transition';
+                btnSec1.className = 'px-3 py-1 rounded-full text-xs font-extrabold text-[#822675] hover:bg-purple-100 transition';
+            } else {
+                mainBox.classList.add('hidden');
+                sec1Box.classList.remove('hidden');
+                btnSec1.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-[#822675] text-white transition';
+                btnMain.className = 'px-3 py-1 rounded-full text-xs font-extrabold text-[#822675] hover:bg-purple-100 transition';
+            }
+        }
+
+        function animateCoverBasketball() {
+            const ball = document.getElementById('moving-bball');
+            ball.setAttribute('opacity', '1');
+            let start = null;
+            const duration = 1300;
+
+            function frame(ts) {
+                if (!start) start = ts;
+                const p = Math.min((ts - start) / duration, 1);
+                // Cubic Bezier along M 155 375 C 210 100, 690 100, 745 375
+                const u = 1 - p;
+                const x = u*u*u*155 + 3*u*u*p*210 + 3*u*p*p*690 + p*p*p*745;
+                const y = u*u*u*365 + 3*u*u*p*85 + 3*u*p*p*85 + p*p*p*365;
+                ball.setAttribute('x', x);
+                ball.setAttribute('y', y);
+                if (p < 1) requestAnimationFrame(frame);
+                else setTimeout(() => ball.setAttribute('opacity', '0'), 400);
+            }
+            requestAnimationFrame(frame);
+        }
+
+        /* ---------------------------------------------------
+           3. SLIDE 2: STUDENT THROWING RED BALL DEMO
+           --------------------------------------------------- */
+        function playStudentThrowDemo() {
+            const ball = document.getElementById('student-red-ball');
+            let start = null;
+            const duration = 1000;
+            const x0 = 172, xEnd = 475;
+            const y0 = 85, yEnd = 215;
+
+            function frame(ts) {
+                if (!start) start = ts;
+                const p = Math.min((ts - start) / duration, 1);
+                const curX = x0 + (xEnd - x0) * p;
+                const curY = y0 + (yEnd - y0) * (p * p);
+                ball.setAttribute('cx', curX);
+                ball.setAttribute('cy', curY);
+                if (p < 1) requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        }
+
+        /* ---------------------------------------------------
+           4. SLIDE 3: OLM HAMMER APPARATUS & STROBOSCOPIC PHOTO
+           --------------------------------------------------- */
+        const appCanvas = document.getElementById('olm-apparatus-canvas');
+        const aCtx = appCanvas.getContext('2d');
+
+        let apparatusState = {
+            t: 0,            // normalized 0 -> 1
+            running: false,
+            hammerAngle: 0,
+            strobePhotoMode: false,
+            animId: null
+        };
+
+        function strikeHammerExperiment() {
+            if (apparatusState.animId) cancelAnimationFrame(apparatusState.animId);
+            apparatusState.t = 0;
+            apparatusState.running = true;
+            document.getElementById('apparatus-status').textContent = 'Đang thả rơi đồng thời 2 viên bi...';
+
+            let start = null;
+            const duration = 1350;
+
+            function loop(ts) {
+                if (!start) start = ts;
+                const elapsed = ts - start;
+                const p = Math.min(elapsed / duration, 1);
+                apparatusState.t = p;
+
+                drawApparatusScene();
+
+                if (p < 1) {
+                    apparatusState.animId = requestAnimationFrame(loop);
+                } else {
+                    apparatusState.running = false;
+                    document.getElementById('apparatus-status').textContent = 'Cả hai viên bi chạm đất CÙNG MỘT LÚC!';
+                }
+            }
+            apparatusState.animId = requestAnimationFrame(loop);
+        }
+
+        function toggleStrobePhotoMode() {
+            apparatusState.strobePhotoMode = !apparatusState.strobePhotoMode;
+            const btn = document.getElementById('btn-strobe-photo');
+            const titleEl = document.getElementById('slide3-title');
+            if (apparatusState.strobePhotoMode) {
+                apparatusState.t = 1;
+                btn.innerHTML = `<i class="fa-solid fa-flask"></i> Quay lại Dụng cụ thí nghiệm`;
+                titleEl.textContent = 'Ảnh chụp hoạt nghiệm chuyển động của hai viên bi';
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-camera-retro"></i> Xem ảnh chụp hoạt nghiệm`;
+                titleEl.textContent = 'Thí nghiệm về sự giống nhau giữa chuyển động ném ngang và chuyển động rơi tự do';
+            }
+            drawApparatusScene();
+        }
+
+        function drawApparatusScene() {
+            const W = appCanvas.width;
+            const H = appCanvas.height;
+            aCtx.clearRect(0, 0, W, H);
+
+            const startY = 88;
+            const groundY = 355;
+            const biBX = 165;
+            const biAXStart = 235;
+            const biAXEnd = 595;
+
+            // Ground bar
+            aCtx.fillStyle = '#d6d3d1';
+            aCtx.fillRect(40, groundY, W - 80, 14);
+            aCtx.strokeStyle = '#78716c';
+            aCtx.lineWidth = 2;
+            aCtx.strokeRect(40, groundY, W - 80, 14);
+
+            // 1. Draw OLM Wooden Stand & Blue Spring Mount (Top-Left)
+            // Vertical Stand Rod
+            aCtx.fillStyle = '#9ca3af';
+            aCtx.fillRect(195, 25, 8, groundY - 25);
+            // Wooden Base Block at top
+            aCtx.fillStyle = '#a16207';
+            aCtx.fillRect(150, 48, 85, 32);
+            // Blue Spring Plate
+            aCtx.strokeStyle = '#0284c7';
+            aCtx.lineWidth = 5;
+            aCtx.beginPath();
+            aCtx.moveTo(155, 45);
+            aCtx.lineTo(230, 45);
+            aCtx.lineTo(230, 88);
+            aCtx.stroke();
+
+            // Hammer on Top
+            aCtx.save();
+            aCtx.translate(180, 18);
+            const hitRot = apparatusState.t > 0 ? 0.35 : 0;
+            aCtx.rotate(hitRot);
+            aCtx.fillStyle = '#eab308';
+            aCtx.fillRect(0, 0, 50, 10);
+            aCtx.fillStyle = '#0ea5e9';
+            aCtx.fillRect(42, -6, 18, 24);
+            aCtx.restore();
+
+            // Labels B and A at launch position
+            aCtx.fillStyle = '#7c2d86';
+            aCtx.font = 'bold 16px Nunito, sans-serif';
+            aCtx.fillText('B', biBX - 24, startY + 5);
+            aCtx.fillStyle = '#e11d48';
+            aCtx.fillText('A', biAXStart + 18, startY - 12);
+
+            // v0 vector arrow at A
+            aCtx.strokeStyle = '#15803d';
+            aCtx.fillStyle = '#15803d';
+            aCtx.lineWidth = 3;
+            aCtx.beginPath();
+            aCtx.moveTo(biAXStart + 12, startY);
+            aCtx.lineTo(biAXStart + 82, startY);
+            aCtx.stroke();
+            aCtx.beginPath();
+            aCtx.moveTo(biAXStart + 88, startY);
+            aCtx.lineTo(biAXStart + 76, startY - 5);
+            aCtx.lineTo(biAXStart + 76, startY + 5);
+            aCtx.closePath();
+            aCtx.fill();
+            aCtx.font = 'italic bold 20px "Times New Roman", serif';
+            aCtx.fillText('v⃗₀', biAXStart + 42, startY - 10);
+
+            // 2. If in Stroboscopic Photo Mode (or steps shown), draw 6 horizontal cyan alignment lines & ghost balls
+            const intervals = 5;
+            if (apparatusState.strobePhotoMode) {
+                for (let i = 0; i <= intervals; i++) {
+                    const p = i / intervals;
+                    const yPos = startY + (groundY - 12 - startY) * (p * p);
+                    const xPosA = biAXStart + (biAXEnd - biAXStart) * p;
+
+                    // Cyan horizontal line (exact match to Video 1: 03:25)
+                    aCtx.strokeStyle = '#06b6d4';
+                    aCtx.lineWidth = 2.5;
+                    aCtx.beginPath();
+                    aCtx.moveTo(biBX - 30, yPos);
+                    aCtx.lineTo(biAXEnd + 30, yPos);
+                    aCtx.stroke();
+
+                    // Purple Ball B snapshot
+                    aCtx.fillStyle = '#7c2d86';
+                    aCtx.beginPath();
+                    aCtx.arc(biBX, yPos, 11, 0, Math.PI * 2);
+                    aCtx.fill();
+
+                    // Pink Ball A snapshot
+                    aCtx.fillStyle = '#ff758f';
+                    aCtx.beginPath();
+                    aCtx.arc(xPosA, yPos, 11, 0, Math.PI * 2);
+                    aCtx.fill();
+                }
+            } else {
+                // Faint dashed trajectory preview
+                aCtx.save();
+                aCtx.strokeStyle = '#cbd5e1';
+                aCtx.setLineDash([5, 5]);
+                aCtx.lineWidth = 2;
+                aCtx.beginPath();
+                aCtx.moveTo(biBX, startY);
+                aCtx.lineTo(biBX, groundY - 12);
+                aCtx.moveTo(biAXStart, startY);
+                for (let s = 0; s <= 20; s++) {
+                    const p = s / 20;
+                    const px = biAXStart + (biAXEnd - biAXStart) * p;
+                    const py = startY + (groundY - 12 - startY) * (p * p);
+                    aCtx.lineTo(px, py);
+                }
+                aCtx.stroke();
+                aCtx.restore();
+
+                // Active Falling Balls at current t
+                const p = apparatusState.t;
+                const curY = startY + (groundY - 12 - startY) * (p * p);
+                const curXA = biAXStart + (biAXEnd - biAXStart) * p;
+
+                // Horizontal sync dashed line while falling
+                if (p > 0) {
+                    aCtx.save();
+                    aCtx.strokeStyle = '#06b6d4';
+                    aCtx.setLineDash([6, 4]);
+                    aCtx.lineWidth = 2;
+                    aCtx.beginPath();
+                    aCtx.moveTo(biBX, curY);
+                    aCtx.lineTo(curXA, curY);
+                    aCtx.stroke();
+                    aCtx.restore();
+                }
+
+                // Ball B (Purple)
+                aCtx.fillStyle = '#7c2d86';
+                aCtx.beginPath();
+                aCtx.arc(biBX, curY, 12, 0, Math.PI * 2);
+                aCtx.fill();
+
+                // Ball A (Coral Pink)
+                aCtx.fillStyle = '#ff758f';
+                aCtx.strokeStyle = '#be123c';
+                aCtx.lineWidth = 1.5;
+                aCtx.beginPath();
+                aCtx.arc(curXA, curY, 12, 0, Math.PI * 2);
+                aCtx.fill();
+                aCtx.stroke();
+            }
+        }
+
+        /* ---------------------------------------------------
+           5. SLIDE 4: SWITCH PROJECTION VS VECTOR DIAGRAM
+           --------------------------------------------------- */
+        function setSlide4Mode(mode) {
+            const svgProj = document.getElementById('s4-svg-proj');
+            const svgVec = document.getElementById('s4-svg-vec');
+            const btnProj = document.getElementById('btn-s4-proj');
+            const btnVec = document.getElementById('btn-s4-vec');
+            const btnAnim = document.getElementById('btn-s4-anim');
+            const caption = document.getElementById('s4-diagram-caption');
+
+            if (mode === 'projection') {
+                svgProj.classList.remove('hidden');
+                svgVec.classList.add('hidden');
+                btnProj.className = 'px-3.5 py-1 rounded-full text-xs sm:text-sm font-extrabold bg-[#822675] text-white transition';
+                btnVec.className = 'px-3.5 py-1 rounded-full text-xs sm:text-sm font-extrabold text-[#822675] hover:bg-purple-100 transition';
+                btnAnim.classList.remove('hidden');
+                caption.textContent = 'Hình chiếu vị trí viên bi lên phương ngang Ox (cách đều) và phương đứng Oy';
+            } else {
+                svgProj.classList.add('hidden');
+                svgVec.classList.remove('hidden');
+                btnVec.className = 'px-3.5 py-1 rounded-full text-xs sm:text-sm font-extrabold bg-[#822675] text-white transition';
+                btnProj.className = 'px-3.5 py-1 rounded-full text-xs sm:text-sm font-extrabold text-[#822675] hover:bg-purple-100 transition';
+                btnAnim.classList.add('hidden');
+                caption.textContent = 'Hệ trục tọa độ Oxy và phân tích vectơ vận tốc tại điểm M bất kỳ';
+            }
+        }
+
+        function animateSlide4Projection() {
+            const lines = document.getElementById('s4-vert-lines');
+            const shadows = document.getElementById('s4-ox-shadows');
+            lines.setAttribute('opacity', '1');
+            shadows.setAttribute('opacity', '1');
+        }
+
+        /* ---------------------------------------------------
+           6. LASER POINTER & TEACHER DRAWING PEN
+           --------------------------------------------------- */
+        let laserActive = false;
+        let penActive = false;
+        let isDrawing = false;
+        const laserDot = document.getElementById('laser-dot');
+        const drawCanvas = document.getElementById('drawing-canvas');
+        const drawCtx = drawCanvas.getContext('2d');
+
+        function resizeDrawCanvas() {
+            drawCanvas.width = window.innerWidth;
+            drawCanvas.height = window.innerHeight - 56;
+        }
+        window.addEventListener('resize', resizeDrawCanvas);
+        resizeDrawCanvas();
+
+        function toggleLaserPointer() {
+            laserActive = !laserActive;
+            const btn = document.getElementById('btn-laser');
+            if (laserActive) {
+                btn.classList.replace('bg-white/15', 'bg-rose-600');
+                laserDot.style.display = 'block';
+            } else {
+                btn.classList.replace('bg-rose-600', 'bg-white/15');
+                laserDot.style.display = 'none';
+            }
+        }
+
+        function toggleDrawPen() {
+            penActive = !penActive;
+            const btn = document.getElementById('btn-pen');
+            if (penActive) {
+                btn.classList.replace('bg-white/15', 'bg-amber-400');
+                btn.classList.replace('text-white', 'text-slate-950');
+                drawCanvas.classList.add('active-draw');
+            } else {
+                btn.classList.replace('bg-amber-400', 'bg-white/15');
+                btn.classList.replace('text-slate-950', 'text-white');
+                drawCanvas.classList.remove('active-draw');
+            }
+        }
+
+        function clearDrawingCanvas() {
+            drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            if (laserActive) {
+                laserDot.style.left = e.clientX + 'px';
+                laserDot.style.top = e.clientY + 'px';
+            }
+        });
+
+        drawCanvas.addEventListener('mousedown', (e) => {
+            if (!penActive) return;
+            isDrawing = true;
+            drawCtx.beginPath();
+            drawCtx.moveTo(e.clientX, e.clientY);
+        });
+
+        drawCanvas.addEventListener('mousemove', (e) => {
+            if (!penActive || !isDrawing) return;
+            drawCtx.lineWidth = 3.5;
+            drawCtx.lineCap = 'round';
+            drawCtx.strokeStyle = '#e11d48';
+            drawCtx.lineTo(e.clientX, e.clientY);
+            drawCtx.stroke();
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDrawing = false;
+        });
+
+        /* ---------------------------------------------------
+           INITIALIZE ON LOAD
+           --------------------------------------------------- */
+        window.onload = function () {
+            updateStepCounterUI();
+            drawApparatusScene();
+        };
+    </script>
+</body>
+</html>
